@@ -1,0 +1,17 @@
+{
+  "name": "imax_tracker",
+  "version": "1.0.0",
+  "description": "simple imax schedule tracker",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^0.18.0",
+    "node-telegram-bot-api": "^0.30.0",
+    "xml-parser": "^1.2.1"
+  }
+}
