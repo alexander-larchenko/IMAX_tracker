@@ -1,9 +1,10 @@
 const axios = require('axios');
 const parse = require('xml-parser');
+const os = require('os');
 const inspect = require('util').inspect;
 const TelegramBot = require('node-telegram-bot-api');
 const token = '476038060:AAHJ6iO3Q1i-qR_Wxbc6Lv-X5CUIRv0Uda0';
-const bot = new TelegramBot(token, {polling: true});
+const bot = new TelegramBot(token, {polling: false});
 const botChatId = 404323406;
 var isSearchFound = false;
 const AVENGERS_INF_WAR = '2341';
@@ -53,7 +54,10 @@ function searchFilmFunc () {
         });
 }
 
+bot.sendMessage(botChatId, os.hostname() + ' New Tracker started');
 searchFilmFunc();
 interval = setInterval(searchFilmFunc, 5 * (60000 + Math.random() * 1000));
 
-
+process.on('exit', function (){
+	bot.sendMessage(botChatId, os.hostname() + ' Tracker Stopped.');
+});
