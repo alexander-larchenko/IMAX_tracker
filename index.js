@@ -1,21 +1,24 @@
 const axios = require('axios');
 const parse = require('xml-parser');
-const os = require('os');
+const pcName = require('os').hostname();
 const inspect = require('util').inspect;
 const TelegramBot = require('node-telegram-bot-api');
 const token = '476038060:AAHJ6iO3Q1i-qR_Wxbc6Lv-X5CUIRv0Uda0';
-const bot = new TelegramBot(token, {polling: false});
+const bot = new TelegramBot(token, {polling: true});
 const botChatId = 404323406;
 var isSearchFound = false;
 const AVENGERS_INF_WAR = '2341';
-const test_id = '3103';
+const minuteMS = 60000;
 
 //=== SETTINGS
 const notifyFailures = false;
-const oneTimeNotification = true;
+const oneTimeNotification = false;
 const searchDate = '2018-05-11'; // '2018-05-24'
 const searchFilm = AVENGERS_INF_WAR;
+var updateInterval = 5;
 var interval = null;
+var lastMessage = '<empty>';
+var initialCheck = true;
 
 function searchFilmFunc () {
     axios.get('https://planetakino.ua/showtimes/xml/')
@@ -30,34 +33,101 @@ function searchFilmFunc () {
                 });
 
                 if (neededMovie) {
-                    bot.sendMessage(botChatId, currentTime + ' IMAX Schedule ' + searchDate + ' READY!!!');
-                    console.info(currentTime +' IMAX Schedule ' + searchDate + ' READY!!!');
+                    lastMessage = currentTime + ' IMAX Schedule ' + searchDate + ' READY!!!';
+                    bot.sendMessage(botChatId, lastMessage);
+                    console.info(lastMessage);
                 } else {
-                    if (notifyFailures) bot.sendMessage(botChatId, currentTime + ' IMAX Schedule for search date: ' + searchDate + ' is released, but your movie NOT FOUND');
-                    console.error(currentTime +' IMAX Schedule for search date: ' + searchDate + ' is released, but your movie NOT FOUND');
+                    lastMessage = currentTime + ' IMAX Schedule for search date: ' + searchDate + ' is released, but your movie NOT FOUND';
+                    if (notifyFailures || initialCheck) bot.sendMessage(botChatId, lastMessage);
+                    console.error(lastMessage);
                 }
                 isSearchFound = !!neededMovie;
                 if (oneTimeNotification && isSearchFound) {
-                    clearInterval(interval);
-                    setTimeout(() => {
-                        process.exit();
-                    }, 5000);
+                    stopTracker();
                 }
             } else {
-                if (notifyFailures) bot.sendMessage(botChatId, currentTime + ' IMAX Schedule for search date: ' + searchDate + ' NOT FOUND');
-                console.error(currentTime + ' IMAX Schedule for search date: ' + searchDate + ' NOT FOUND');
+                lastMessage = currentTime + ' IMAX Schedule for search date: ' + searchDate + ' NOT FOUND';
+                if (notifyFailures || initialCheck) bot.sendMessage(botChatId, lastMessage);
+                console.error(lastMessage);
             }
+            initialCheck = false;
         })
         .catch(error => {
-            bot.sendMessage(botChatId, 'Error on search :(');
+            lastMessage = 'Error on search :(';
+            bot.sendMessage(botChatId, lastMessage);
             console.log(error);
+            initialCheck  = false;
         });
 }
 
-bot.sendMessage(botChatId, os.hostname() + ' New Tracker started');
-searchFilmFunc();
-interval = setInterval(searchFilmFunc, 5 * (60000 + Math.random() * 1000));
+function stopTracker(withExit) {
+    clearInterval(interval);
+    bot.sendMessage(botChatId, pcName + ' Tracker Stopped.');
+    if (withExit) {
+        setTimeout(process.exit, 2500);
+    }
+}
 
-process.on('exit', function (){
-	bot.sendMessage(botChatId, os.hostname() + ' Tracker Stopped.');
+function init() {
+    initialCheck = true;
+    searchFilmFunc();
+    interval = setInterval(searchFilmFunc, updateInterval * minuteMS);
+    bot.sendMessage(botChatId, pcName + ' New Tracker started. Checking every ' + updateInterval + ' minutes');
+}
+
+bot.onText(/^t$/, () => {
+    bot.sendMessage(botChatId, pcName + ' Tracker Here. Checking every ' + updateInterval + ' minutes');
+    bot.sendMessage(botChatId, 'Last Message: ' + lastMessage);
 });
+
+bot.onText(/^stop$/, () => {
+    stopTracker();
+});
+
+bot.onText(/^start$/, () => {
+    init();
+});
+
+bot.onText(/^pause \d+$/, (msg, text) => {
+    var minutes = +text.match(/\d+/);
+    bot.sendMessage(botChatId, pcName + ' Pausing for ' + minutes + ' minutes');
+    stopTracker();
+    setTimeout(init, minutes * minuteMS);
+});
+
+bot.onText(/^interval \d+$/, (msg, text) => {
+    var minutes = +text.match(/\d+/);
+    bot.sendMessage(botChatId, pcName + ' Changing interval to ' + minutes + ' minutes');
+    stopTracker();
+    updateInterval = minutes;
+    init();
+});
+
+
+// Init
+bot.sendMessage(botChatId, pcName + ' joined.');
+//init();
+
+
+/* install as service
+
+Installing it:
+
+npm install -g qckwinsvc
+Installing your service:
+
+qckwinsvc
+
+prompt: Service name: [name for your service]
+prompt: Service description: [description for it]
+prompt: Node script path: [path of your node script]
+Service installed
+Uninstalling your service:
+
+qckwinsvc --uninstall
+
+prompt: Service name: [name of your service]
+prompt: Node script path: [path of your node script]
+Service stopped
+Service uninstalled
+*/

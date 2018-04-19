@@ -66,4 +66,5 @@ typings/
 *.launch
 .settings/
 *.sublime-workspace
+daemon/*
 
