@@ -89,14 +89,14 @@ bot.onText(/^start$/, () => {
 });
 
 bot.onText(/^pause \d+$/, (msg, text) => {
-    var minutes = +text.match(/\d+/);
+    var minutes = +text[0].match(/\d+/)[0];
     bot.sendMessage(botChatId, pcName + ' Pausing for ' + minutes + ' minutes');
     stopTracker();
     setTimeout(init, minutes * minuteMS);
 });
 
 bot.onText(/^interval \d+$/, (msg, text) => {
-    var minutes = +text.match(/\d+/);
+    var minutes = +text[0].match(/\d+/)[0];
     bot.sendMessage(botChatId, pcName + ' Changing interval to ' + minutes + ' minutes');
     stopTracker();
     updateInterval = minutes;
