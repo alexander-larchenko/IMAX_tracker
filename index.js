@@ -107,27 +107,3 @@ bot.onText(/^interval \d+$/, (msg, text) => {
 // Init
 bot.sendMessage(botChatId, pcName + ' joined.');
 //init();
-
-
-/* install as service
-
-Installing it:
-
-npm install -g qckwinsvc
-Installing your service:
-
-qckwinsvc
-
-prompt: Service name: [name for your service]
-prompt: Service description: [description for it]
-prompt: Node script path: [path of your node script]
-Service installed
-Uninstalling your service:
-
-qckwinsvc --uninstall
-
-prompt: Service name: [name of your service]
-prompt: Node script path: [path of your node script]
-Service stopped
-Service uninstalled
-*/
