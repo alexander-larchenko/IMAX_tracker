@@ -6,19 +6,18 @@ const TelegramBot = require('node-telegram-bot-api');
 const token = '476038060:AAHJ6iO3Q1i-qR_Wxbc6Lv-X5CUIRv0Uda0';
 const bot = new TelegramBot(token, {polling: true});
 const botChatId = 404323406;
-var isSearchFound = false;
-const AVENGERS_INF_WAR = '2341';
+let isSearchFound = false;
 const minuteMS = 60000;
 
 //=== SETTINGS
 const notifyFailures = false;
 const oneTimeNotification = false;
-const searchDate = '2018-05-11'; // '2018-05-24'
-const searchFilm = AVENGERS_INF_WAR;
-var updateInterval = 5;
-var interval = null;
-var lastMessage = '<empty>';
-var initialCheck = true;
+const searchDate = '2019-07-12'; // '2018-05-24'
+const searchFilm = '00000000000000000000000000001772'; // movieId from https://planetakino.ua/showtimes/xml/
+let updateInterval = 5;
+let interval = null;
+let lastMessage = '<empty>';
+let initialCheck = true;
 
 function searchFilmFunc () {
     axios.get('https://planetakino.ua/showtimes/xml/')
@@ -89,14 +88,14 @@ bot.onText(/^start$/, () => {
 });
 
 bot.onText(/^pause \d+$/, (msg, text) => {
-    var minutes = +text[0].match(/\d+/)[0];
+    const minutes = +text[0].match(/\d+/)[0];
     bot.sendMessage(botChatId, pcName + ' Pausing for ' + minutes + ' minutes');
     stopTracker();
     setTimeout(init, minutes * minuteMS);
 });
 
 bot.onText(/^interval \d+$/, (msg, text) => {
-    var minutes = +text[0].match(/\d+/)[0];
+    const minutes = +text[0].match(/\d+/)[0];
     bot.sendMessage(botChatId, pcName + ' Changing interval to ' + minutes + ' minutes');
     stopTracker();
     updateInterval = minutes;
